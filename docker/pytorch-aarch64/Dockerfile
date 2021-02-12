@@ -96,13 +96,17 @@ RUN chown $DOCKER_USER:$DOCKER_USER /home/$DOCKER_USER/.bash_profile
 FROM pytorch-base AS pytorch-libs
 ARG njobs
 
+RUN apt-get -y install libopenblas-dev python3 python3-pip
+
+# RUN update-alternatives --config libblas.so.3
+
 ENV NP_MAKE="${njobs}"
 
 # Key version numbers
 ENV PY_VERSION=3.8.5 \
     ACL_VERSION="v20.08" \
     OPENBLAS_VERSION=0.3.9 \
-    NINJA_VERSION=1.9.0
+    NINJA_VERSION=1.10.2
 
 # Package build parameters
 ENV PROD_DIR=/opt \
@@ -128,19 +132,19 @@ ENV CC=gcc \
     BASE_LDFLAGS="-L$PROD_DIR/arm_opt_routines/lib -lmathlib -lm" \
     LD_LIBRARY_PATH="$PROD_DIR/arm_opt_routines/lib"
 
-COPY scripts/build-cpython.sh $PACKAGE_DIR/.
-RUN $PACKAGE_DIR/build-cpython.sh
+# COPY scripts/build-cpython.sh $PACKAGE_DIR/.
+# RUN $PACKAGE_DIR/build-cpython.sh
 
 # Build OpenBLAS from source
-COPY scripts/build-openblas.sh $PACKAGE_DIR/.
-RUN $PACKAGE_DIR/build-openblas.sh
-ENV OPENBLAS_DIR=$PROD_DIR/openblas/$OPENBLAS_VERSION
-ENV LD_LIBRARY_PATH=$OPENBLAS_DIR/lib:$LD_LIBRARY_PATH
+# COPY scripts/build-openblas.sh $PACKAGE_DIR/.
+# RUN $PACKAGE_DIR/build-openblas.sh
+# ENV OPENBLAS_DIR=$PROD_DIR/openblas/$OPENBLAS_VERSION
+# ENV LD_LIBRARY_PATH=$OPENBLAS_DIR/lib:$LD_LIBRARY_PATH
 
-# Build Arm Compute Library from source
-COPY scripts/build-acl.sh $PACKAGE_DIR/.
-RUN $PACKAGE_DIR/build-acl.sh
-ENV ACL_ROOT_DIR=$PROD_DIR/ComputeLibrary
+# # Build Arm Compute Library from source
+# COPY scripts/build-acl.sh $PACKAGE_DIR/.
+# RUN $PACKAGE_DIR/build-acl.sh
+# ENV ACL_ROOT_DIR=$PROD_DIR/ComputeLibrary
 
 # Build ninja from source
 COPY scripts/build-ninja.sh $PACKAGE_DIR/.
@@ -153,6 +157,15 @@ ENV PATH=$PROD_DIR/ninja/$NINJA_VERSION:$PATH
 FROM pytorch-libs AS pytorch-tools
 ARG njobs
 ENV NP_MAKE="${njobs}"
+
+RUN apt-get -y install python3-venv
+RUN apt-get -y install \
+    python3-yaml \
+    python3-pytest \
+    python3-matplotlib \
+    python3-pil \
+    python3-lmdb \
+    python3-ck
 
 # Key version numbers
 ENV NUMPY_VERSION=1.19.1 \
@@ -168,49 +181,45 @@ RUN mkdir -p $PACKAGE_DIR
 # Setup a Python virtual environment
 ENV VENV_DIR=/home/$DOCKER_USER/python3-venv
 ENV VENV_ACT=$VENV_DIR/bin/activate
-RUN python -m venv $VENV_DIR
+RUN python3 -m venv $VENV_DIR
+RUN . $VENV_ACT
 ENV PATH="$VENV_DIR/bin:$PATH"
 
 # Install some basic python packages needed for NumPy
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir "setuptools>=41.0.0" six mock wheel cython
+RUN pip3 install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir "setuptools>=41.0.0" six mock wheel cython
 
-# Build numpy from source, using OpenBLAS for BLAS calls
-COPY scripts/build-numpy.sh $PACKAGE_DIR/.
-COPY patches/site.cfg $PACKAGE_DIR/site.cfg
-RUN $PACKAGE_DIR/build-numpy.sh
+# pytorch build dependencies
+RUN pip3 install --no-cache-dir \
+    numpy \
+    pyyaml
+    # mkl \
+    # mkl-include \
 
-# Install some  basic python packages needed for SciPy
-RUN pip install --no-cache-dir pybind11 pyangbind
-# Build numpy from source, using OpenBLAS for BLAS calls
-COPY scripts/build-scipy.sh $PACKAGE_DIR/.
-COPY patches/site.cfg $PACKAGE_DIR/site.cfg
-RUN $PACKAGE_DIR/build-scipy.sh
+RUN pip3 install --no-cache-dir \
+    setuptools \
+    cmake \
+    cffi \
+    typing_extensions
+
+RUN pip3 install --no-cache-dir \
+    future \
+    six \
+    requests \
+    dataclasses
 
 # Install some more essentials.
-RUN pip install --no-cache-dir hypothesis pyyaml pytest
-RUN pip install --no-cache-dir matplotlib
-RUN pip install --no-cache-dir pillow==6.1 lmdb
-RUN pip install --no-cache-dir ck absl-py pycocotools
-
-# Install OpenCV into our venv,
-# Note: Scripts are provided to build and install OpenCV from the
-# GitHub repository. These are no longer used by default in favour of the
-# opencv-python package, in this case opencv-python-headless.
-# Uncomment code block '1' below, and comment out code block '2' to build
-# from the GitHub sources.
-# --
-# 1 - build from GitHub sources:
-#COPY scripts/build-opencv.sh $PACKAGE_DIR/.
-#RUN $PACKAGE_DIR/build-opencv.sh
+RUN pip3 install numpy scipy
+RUN pip3 install --no-cache-dir hypothesis pyyaml
 # --
 # 2 - install opencv-python-headless
-RUN pip install --no-cache-dir scikit-build
+RUN pip3 install --no-cache-dir scikit-build
+
 # enum34 is not compatable with Python 3.6+, and not required
 # it is installed as a dependency for an earlier package and needs
 # to be removed in order for the OpenCV build to complete.
-RUN pip uninstall enum34 -y
-RUN pip install --no-cache-dir --no-binary :all: opencv-python-headless
+RUN pip3 uninstall enum34 -y
+# RUN pip3 install --no-cache-dir --no-binary :all: opencv-python-headless
 
 CMD ["bash", "-l"]
 
@@ -224,7 +233,7 @@ ENV ONEDNN_BUILD="${onednn_opt}" \
     NP_MAKE="${njobs}"
 
 # Key version numbers
-ENV TORCH_VERSION=1.6.0
+ENV TORCH_VERSION=1.7.0
 ENV ONEDNN_VERSION=v1.7
 ENV VISION_VERSION=v0.7.0
 
@@ -243,8 +252,8 @@ ENV PATH="$VENV_DIR/bin:$PATH"
 COPY scripts/build-pytorch.sh $PACKAGE_DIR/.
 COPY patches/pytorch_onednn.patch $PACKAGE_DIR/.
 COPY patches/onednn_acl_verbose.patch $PACKAGE_DIR/.
-RUN $PACKAGE_DIR/build-pytorch.sh
-RUN pip install git+https://github.com/pytorch/vision@$VISION_VERSION
+# RUN $PACKAGE_DIR/build-pytorch.sh
+# RUN pip3 install git+https://github.com/pytorch/vision@$VISION_VERSION
 
 CMD ["bash", "-l"]
 

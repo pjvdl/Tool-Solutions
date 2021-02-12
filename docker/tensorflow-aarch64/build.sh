@@ -18,6 +18,25 @@
 # *******************************************************************************
 
 
+# Inputs:
+#   docker_target - the docker build target
+#   docker_name   - docker tags
+#   buildx_target - (optional) if cross-building, specify the buildx target
+function build_docker {
+  if [[ $buildx_target == "" ]]; then
+    # standard docker build
+    docker build $extra_args --target tensorflow-base -t tensorflow-base-v$tf_version:latest .
+  else
+    # buildx cross build
+    EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
+    if [[ EXISTING == "" ]]; then
+      docker buildx create --name jetsonubuntu
+    fi
+    docker buildx use jetsonubuntu
+    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name:latest --load .
+  fi
+}
+
 # Staged docker build for TensorFlow
 # ==================================
 
@@ -73,8 +92,10 @@ readonly target_arch="aarch64"
 readonly host_arch=$(arch)
 
 if ! [ "$host_arch" == "$target_arch" ]; then
-   echo "Error: $(arch) is not supported"
-   print_usage_and_exit 1
+   echo "Host is $(arch). Using buildx to build a multi-architecture image for architecture $target_arch"
+   buildx_target=$target_arch
+else
+   buildx_target=""
 fi
 
 
@@ -245,25 +266,35 @@ extra_args="$extra_args --build-arg cpu=$target"
 
 if [[ $build_base_image ]]; then
   # Stage 1: Base image, Ubuntu with core packages and GCC9
-  docker build $extra_args --target tensorflow-base -t tensorflow-base-v$tf_version:latest .
+  docker_target="tensorflow-base"
+  docker_name="tensorflow-base-v$tf_version"
+  build_docker
 fi
 
 if [[ $build_libs_image ]]; then
   # Stage 2: Libs image, essential maths libs and Python built and installed
-  docker build $extra_args --target tensorflow-libs -t tensorflow-libs-v$tf_version:latest .
+  docker_target="tensorflow-libs"
+  docker_name="tensorflow-libs-v$tf_version"
+  build_docker
 fi
 
 if [[ $build_tools_image ]]; then
   # Stage 3: Tools image, Python3 venv added with additional Python essentials
-  docker build $extra_args --target tensorflow-tools -t tensorflow-tools-v$tf_version:latest .
+  docker_target="tensorflow-tools"
+  docker_name="tensorflow-tools-v$tf_version"
+  build_docker
 fi
 
 if [[ $build_dev_image ]]; then
   # Stage 4: Adds bazel and TensorFlow builds with sources and creates a whl.
-  docker build $extra_args --target tensorflow-dev -t tensorflow-dev-v$tf_version$onednn:latest .
+  docker_target="tensorflow-dev"
+  docker_name="tensorflow-dev-v$tf_version"
+  build_docker
 fi
 
 if [[ $build_tensorflow_image ]]; then
   # Stage 5: Clone benchmarks with TensorFlow installed.
-  docker build $extra_args --target tensorflow -t tensorflow-v$tf_version$onednn:latest .
+  docker_target="tensorflow"
+  docker_name="tensorflow-v$tf_version"
+  build_docker
 fi

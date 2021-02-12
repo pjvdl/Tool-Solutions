@@ -17,6 +17,24 @@
 # limitations under the License.
 # *******************************************************************************
 
+# Inputs:
+#   docker_target - the docker build target
+#   docker_name   - docker tags
+#   buildx_target - (optional) if cross-building, specify the buildx target
+function build_docker {
+  if [[ $buildx_target == "" ]]; then
+    # standard docker build
+    docker build $extra_args --target pytorch-base -t pytorch-base-v$tf_version:latest .
+  else
+    # buildx cross build
+    EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
+    if [[ EXISTING == "" ]]; then
+      docker buildx create --name jetsonubuntu
+    fi
+    docker buildx use jetsonubuntu
+    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name:latest --load .
+  fi
+}
 
 # Staged docker build for PyTorch
 # ==================================
@@ -63,8 +81,7 @@ readonly target_arch="aarch64"
 readonly host_arch=$(arch)
 
 if ! [ "$host_arch" == "$target_arch" ]; then
-   echo "Error: $(arch) is not supported"
-   print_usage_and_exit 1
+  echo "Host is $(arch). Using buildx to build a multi-architecture image for architecture $target_arch"
 fi
 
 
@@ -185,26 +202,36 @@ echo $extra_args
 
 if [[ $build_base_image ]]; then
   # Stage 1: Base image, Ubuntu with core packages and GCC9
-  docker build $extra_args --target pytorch-base -t pytorch-base:latest .
+  docker_target="pytorch-base"
+  docker_name="pytorch-base"
+  build_docker
 fi
 
 if [[ $build_libs_image ]]; then
   # Stage 2: Libs image, essential maths libs and Python built and installed
-  docker build $extra_args --target pytorch-libs -t pytorch-libs:latest .
+  docker_target="pytorch-libs"
+  docker_name="pytorch-libs"
+  build_docker
 fi
 
 if [[ $build_tools_image ]]; then
   # Stage 3: Tools image, Python3 venv added with additional Python essentials
-  docker build $extra_args --target pytorch-tools -t pytorch-tools:latest .
+  docker_target="pytorch-tools"
+  docker_name="pytorch-tools"
+  build_docker
 fi
 
 if [[ $build_dev_image ]]; then
   # Stage 4: Adds PyTorch build with sources
-  docker build $extra_args --target pytorch-dev -t pytorch-dev:latest .
+  docker_target="pytorch-dev"
+  docker_name="pytorch-dev"
+  build_docker
 fi
 
 if [[ $build_pytorch_image ]]; then
   # Stage 5: Adds PyTorch examples
-  docker build $extra_args --target pytorch -t pytorch:latest .
+  docker_target="pytorch"
+  docker_name="pytorch"
+  build_docker
 fi
 
