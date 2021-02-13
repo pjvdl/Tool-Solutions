@@ -25,7 +25,7 @@
 function build_docker {
   if [[ $buildx_target == "" ]]; then
     # standard docker build
-    docker build $extra_args --target tensorflow-base -t tensorflow-base-v$tf_version:latest .
+    docker build $extra_args --target $docker_target -t $docker_name-v$tf_version:latest .
   else
     # buildx cross build
     EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
