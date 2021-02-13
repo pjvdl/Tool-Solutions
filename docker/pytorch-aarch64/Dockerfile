@@ -226,7 +226,7 @@ CMD ["bash", "-l"]
 # ========
 # Stage 4: build PyTorch
 # ========
-FROM pytorch-libs AS pytorch-dev
+FROM pytorch-libs AS pytorch-source
 ARG njobs
 ARG onednn_opt
 ENV ONEDNN_BUILD="${onednn_opt}" \

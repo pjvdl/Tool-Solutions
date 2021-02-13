@@ -29,6 +29,7 @@ git clone ${src_host}/${src_repo}.git
 cd ${src_repo}
 git checkout v$version -b v$version
 
+export TARGET="arm8"
 export CFLAGS="-O3"
 export LDFLAGS="${BASE_LDFLAGS}"
 

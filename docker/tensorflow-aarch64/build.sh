@@ -287,8 +287,8 @@ fi
 
 if [[ $build_dev_image ]]; then
   # Stage 4: Adds bazel and TensorFlow builds with sources and creates a whl.
-  docker_target="tensorflow-dev"
-  docker_name="tensorflow-dev-v$tf_version"
+  docker_target="tensorflow-build"
+  docker_name="tensorflow-build-v$tf_version"
   build_docker
 fi
 
