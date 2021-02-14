@@ -73,6 +73,8 @@ RUN apt-get -y update && \
       zip \
       zlib1g-dev
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 # Make gcc 9 the default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 1 --slave /usr/bin/g++ g++ /usr/bin/g++-9 && \
     update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-9 1
