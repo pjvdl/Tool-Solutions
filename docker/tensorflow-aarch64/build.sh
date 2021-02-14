@@ -250,7 +250,7 @@ if [[ $tf_version == "1" ]]; then
       --build-arg onednn_version=$onednn_version"
 elif [[ $tf_version == "2" ]]; then
    # TF2 dependency versions
-   version="v2.3.0"
+   version="v2.4.0"
    bazel_version="3.4.0"
    onednn_version="v1.7"
    extra_args="$extra_args --build-arg tf_id=$tf_version \
