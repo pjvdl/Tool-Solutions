@@ -33,7 +33,7 @@ function build_docker {
       docker buildx create --name jetsonubuntu
     fi
     docker buildx use jetsonubuntu
-    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name:latest --load .
+    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name-v$tf_version:latest --load .
   fi
 }
 
@@ -267,34 +267,34 @@ extra_args="$extra_args --build-arg cpu=$target"
 if [[ $build_base_image ]]; then
   # Stage 1: Base image, Ubuntu with core packages and GCC9
   docker_target="tensorflow-base"
-  docker_name="tensorflow-base-v$tf_version"
+  docker_name="tensorflow-base"
   build_docker
 fi
 
 if [[ $build_libs_image ]]; then
   # Stage 2: Libs image, essential maths libs and Python built and installed
   docker_target="tensorflow-libs"
-  docker_name="tensorflow-libs-v$tf_version"
+  docker_name="tensorflow-libs"
   build_docker
 fi
 
 if [[ $build_tools_image ]]; then
   # Stage 3: Tools image, Python3 venv added with additional Python essentials
   docker_target="tensorflow-tools"
-  docker_name="tensorflow-tools-v$tf_version"
+  docker_name="tensorflow-tools"
   build_docker
 fi
 
 if [[ $build_dev_image ]]; then
   # Stage 4: Adds bazel and TensorFlow builds with sources and creates a whl.
   docker_target="tensorflow-dev"
-  docker_name="tensorflow-dev-v$tf_version"
+  docker_name="tensorflow-dev"
   build_docker
 fi
 
 if [[ $build_tensorflow_image ]]; then
   # Stage 5: Clone benchmarks with TensorFlow installed.
   docker_target="tensorflow"
-  docker_name="tensorflow-v$tf_version"
+  docker_name="tensorflow"
   build_docker
 fi
