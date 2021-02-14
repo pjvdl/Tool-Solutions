@@ -56,6 +56,7 @@ function print_usage_and_exit {
   echo "                                 * dev        - build image including Bazel and PyTorch, with sources."
   echo "                                 * pytorch    - build image including PyTorch build and benchmarks installed"
   echo "                                 * full       - build all images."
+  echo "                                 * pip        - build the pip wheel"
   echo "      --clean                  Pull a new base image and build without using any cached images."
   echo ""
   echo "Example:"
@@ -102,6 +103,7 @@ do
           build_libs_image=
           build_tools_image=
           build_dev_image=
+          build_pip_image=
           build_pytorch_image=
           ;;
         libs )
@@ -109,6 +111,7 @@ do
           build_libs_image=1
           build_tools_image=
           build_dev_image=
+          build_pip_image=
           build_pytorch_image=
           ;;
          tools )
@@ -116,6 +119,7 @@ do
           build_libs_image=
           build_tools_image=1
           build_dev_image=
+          build_pip_image=
           build_pytorch_image=
           ;;
         dev )
@@ -123,6 +127,15 @@ do
           build_libs_image=
           build_tools_image=
           build_dev_image=1
+          build_pip_image=
+          build_pytorch_image=
+          ;;
+        pip )
+          build_base_image=
+          build_libs_image=
+          build_tools_image=
+          build_dev_image=
+          build_pip_image=1
           build_pytorch_image=
           ;;
         full )
@@ -130,6 +143,7 @@ do
           build_libs_image=1
           build_tools_image=1
           build_dev_image=1
+          build_pip_image=
           build_pytorch_image=1
           ;;
         pytorch )
@@ -137,6 +151,7 @@ do
           build_libs_image=
           build_tools_image=
           build_dev_image=
+          build_pip_image=
           build_pytorch_image=1
           ;;
         * )
@@ -226,6 +241,13 @@ if [[ $build_dev_image ]]; then
   # Stage 4: Adds PyTorch build with sources
   docker_target="pytorch-dev"
   docker_name="pytorch-dev"
+  build_docker
+fi
+
+if [[ $build_pip_image ]]; then
+  # Stage 4: Adds PyTorch pip wheel build with sources
+  docker_target="pytorch-pip"
+  docker_name="pytorch-pip"
   build_docker
 fi
 
