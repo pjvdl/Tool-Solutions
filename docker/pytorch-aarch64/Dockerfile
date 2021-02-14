@@ -250,6 +250,7 @@ ENV PATH="$VENV_DIR/bin:$PATH"
 
 # Build PyTorch
 COPY scripts/build-pytorch.sh $PACKAGE_DIR/.
+COPY scripts/prebuild-pytorch.sh $PACKAGE_DIR/.
 COPY patches/pytorch_onednn.patch $PACKAGE_DIR/.
 COPY patches/onednn_acl_verbose.patch $PACKAGE_DIR/.
 ENV OPENBLAS_DIR=/usr/lib/aarch64-linux-gnu/openblas
