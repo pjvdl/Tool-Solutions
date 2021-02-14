@@ -20,7 +20,7 @@
 # ========
 ARG njobs
 
-FROM ubuntu:18.04 AS pytorch-base
+FROM ubuntu:20.04 AS pytorch-base
 
 RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
 
@@ -233,7 +233,7 @@ ENV ONEDNN_BUILD="${onednn_opt}" \
     NP_MAKE="${njobs}"
 
 # Key version numbers
-ENV TORCH_VERSION=1.7.0
+ENV TORCH_VERSION=1.7.1
 ENV ONEDNN_VERSION=v1.7
 ENV VISION_VERSION=v0.7.0
 
