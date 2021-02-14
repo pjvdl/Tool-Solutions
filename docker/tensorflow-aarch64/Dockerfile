@@ -22,7 +22,7 @@
 ARG njobs
 ARG bazel_mem
 
-FROM ubuntu:18.04 AS tensorflow-base
+FROM ubuntu:20.04 AS tensorflow-base
 
 RUN if ! [ "$(arch)" = "aarch64" ] ; then exit 1; fi
 
