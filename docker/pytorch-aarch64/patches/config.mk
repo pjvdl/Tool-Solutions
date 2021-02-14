@@ -16,11 +16,11 @@
 # *******************************************************************************
 
 
-HOST_CC = /usr/bin/gcc-7
+HOST_CC = /usr/bin/gcc
 HOST_CFLAGS = -std=c99 -O2
 HOST_CFLAGS += -Wall -Wno-unused-function
 
-CC = /usr/bin/gcc-7
+CC = /usr/bin/gcc
 CFLAGS = -std=c99 -pipe -O3
 CFLAGS += -Wall -Wno-missing-braces
 CFLAGS += -Werror=implicit-function-declaration
