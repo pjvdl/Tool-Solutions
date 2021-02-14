@@ -24,7 +24,7 @@
 function build_docker {
   if [[ $buildx_target == "" ]]; then
     # standard docker build
-    docker build $extra_args --target $docker_target -t $docker_name:1.0 .
+    docker build $extra_args --target $docker_target -t neocare/$docker_name:latest .
   else
     # buildx cross build
     EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
