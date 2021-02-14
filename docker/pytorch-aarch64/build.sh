@@ -59,7 +59,7 @@ function print_usage_and_exit {
   echo "      --clean                  Pull a new base image and build without using any cached images."
   echo ""
   echo "Example:"
-  echo "  build.sh --build-type full"
+  echo "  build.sh --build-type dev"
   exit $1
 }
 
