@@ -35,6 +35,8 @@ if [[ ! -d ${src_repo} ]]; then
   git submodule sync
   git submodule update --init --recursive
 
+  exit
+  
   # Patch to avoid using asm not supported for GCC builds.
   curl https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/35157.patch | patch -p1
 fi
