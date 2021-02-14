@@ -261,6 +261,14 @@ RUN $PACKAGE_DIR/build-pytorch.sh
 # CMD ["bash", "-l"]
 
 # ========
+# Stage 4a: build pip wheel
+# ========
+
+FROM pytorch-dev AS pytorch-pip
+
+RUN $PACKAGE_DIR/build-pytorch-pip.sh
+
+# ========
 # Stage 5: Install benchmarks
 # ========
 FROM pytorch-libs AS pytorch
