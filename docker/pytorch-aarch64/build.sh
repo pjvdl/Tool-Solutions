@@ -24,7 +24,7 @@
 function build_docker {
   if [[ $buildx_target == "" ]]; then
     # standard docker build
-    docker build $extra_args --target pytorch-base -t pytorch-base-v$tf_version:latest .
+    docker build $extra_args --target $docker_target -t $docker_name:1.0 .
   else
     # buildx cross build
     EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
@@ -32,7 +32,7 @@ function build_docker {
       docker buildx create --name jetsonubuntu
     fi
     docker buildx use jetsonubuntu
-    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name:latest --load .
+    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t neocare/$docker_name:latest --load .
   fi
 }
 
@@ -82,6 +82,7 @@ readonly host_arch=$(arch)
 
 if ! [ "$host_arch" == "$target_arch" ]; then
   echo "Host is $(arch). Using buildx to build a multi-architecture image for architecture $target_arch"
+  buildx_target=$target_arch
 fi
 
 

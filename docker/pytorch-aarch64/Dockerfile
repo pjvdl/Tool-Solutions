@@ -226,7 +226,7 @@ CMD ["bash", "-l"]
 # ========
 # Stage 4: build PyTorch
 # ========
-FROM pytorch-libs AS pytorch-source
+FROM pytorch-libs AS pytorch-dev
 ARG njobs
 ARG onednn_opt
 ENV ONEDNN_BUILD="${onednn_opt}" \
@@ -256,7 +256,7 @@ ENV OPENBLAS_DIR=/usr/lib/aarch64-linux-gnu/openblas
 RUN $PACKAGE_DIR/build-pytorch.sh
 # RUN pip3 install git+https://github.com/pytorch/vision@$VISION_VERSION
 
-CMD ["bash", "-l"]
+# CMD ["bash", "-l"]
 
 # ========
 # Stage 5: Install benchmarks
