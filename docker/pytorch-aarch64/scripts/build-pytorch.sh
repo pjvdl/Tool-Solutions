@@ -30,11 +30,12 @@ cd $PACKAGE_DIR/$src_repo
 
 MAX_JOBS=${NP_MAKE:-$((num_cpus / 2))} OpenBLAS_HOME=$OPENBLAS_DIR/lib CXX_FLAGS="$BASE_CFLAGS -O3" LDFLAGS=$BASE_LDFLAGS USE_OPENMP=1 USE_LAPACK=1 USE_CUDA=1 USE_FBGEMM=0 USE_DISTRIBUTED=0 python setup.py install
 
-# Check the installation was sucessfull
+# Check the installation was sucessful
 cd $HOME
 python -c 'import torch; print(torch.__version__)' > version.log
-if grep $version version.log; then
-  echo "PyTorch $TORCH_VERSION package installed."
+major_version=`echo $version | sed -rn 's/^([0-9]*.[0-9]*).*$/\1/p'`
+if grep $major_version version.log; then
+  echo "PyTorch $TORCH_VERSION package requested. Version" `cat version.log` "successfully installed."
 else
   echo "PyTorch package installation failed."
   exit 1
