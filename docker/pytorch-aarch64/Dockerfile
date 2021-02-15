@@ -268,6 +268,7 @@ RUN $PACKAGE_DIR/prebuild-pytorch.sh
 
 FROM pytorch-dev AS pytorch-pip
 
+COPY scripts/build-pytorch-pip.sh $PACKAGE_DIR/.
 RUN $PACKAGE_DIR/build-pytorch-pip.sh
 
 # ========
