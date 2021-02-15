@@ -109,7 +109,7 @@ ENV NP_MAKE="${njobs}" \
     TF_VERSION_ID="${tf_id}"
 
 # Key version numbers
-ENV PY_VERSION=3.7.0 \
+ENV PY_VERSION=3.8.2 \
     ARMPL_VERSION=20.2.1 \
     OPENBLAS_VERSION=0.3.9
 

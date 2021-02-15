@@ -25,7 +25,7 @@
 function build_docker {
   if [[ $buildx_target == "" ]]; then
     # standard docker build
-    docker build $extra_args --target $docker_target -t $docker_name-v$tf_version:latest .
+    docker build $extra_args --target $docker_target -t neocare/$docker_name-v$tf_version:latest .
   else
     # buildx cross build
     EXISTING=`docker buildx ls | sed -rn 's/^.*(jetsonubuntu).*$/\1/p'`
@@ -33,7 +33,7 @@ function build_docker {
       docker buildx create --name jetsonubuntu
     fi
     docker buildx use jetsonubuntu
-    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t $docker_name-v$tf_version:latest --load .
+    docker buildx build --platform linux/arm64 $extra_args --target $docker_target -t neocare/$docker_name-v$tf_version:latest --load .
   fi
 }
 
