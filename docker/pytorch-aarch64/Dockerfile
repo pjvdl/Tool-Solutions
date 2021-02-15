@@ -257,7 +257,7 @@ COPY patches/pytorch_onednn.patch $PACKAGE_DIR/.
 COPY patches/onednn_acl_verbose.patch $PACKAGE_DIR/.
 ENV OPENBLAS_DIR=/usr/lib/aarch64-linux-gnu/openblas
 RUN $PACKAGE_DIR/prebuild-pytorch.sh
-RUN $PACKAGE_DIR/build-pytorch.sh
+# RUN $PACKAGE_DIR/build-pytorch.sh
 # RUN pip3 install git+https://github.com/pytorch/vision@$VISION_VERSION
 
 # CMD ["bash", "-l"]
